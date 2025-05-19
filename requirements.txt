@@ -1,0 +1,16 @@
+# Data processing
+pandas>=2.0
+numpy>=1.24
+
+# Lecture Excel
+openpyxl>=3.0
+
+# Visualisation
+streamlit>=1.25
+plotly>=5.15
+
+# Modélisation time series
+statsmodels>=0.14
+
+# Optionnel, si tu ajoutes d’autres calculs ou mises en forme
+scipy>=1.10
