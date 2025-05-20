@@ -1,0 +1,90 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ff606cca-c816-413e-82ba-476ef049bf1f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\n",
+    "\n",
+    "import pandas as pd\n",
+    "from statsmodels.tsa.holtwinters import ExponentialSmoothing\n",
+    "\n",
+    "def load_real_data(files):\n",
+    "dfs = []\n",
+    "for f in files:\n",
+    "df = pd.read_excel(f, sheet_name=\"Sheet1\", engine=\"openpyxl\")\n",
+    "dfs.append(df)\n",
+    "df_all = pd.concat(dfs, ignore_index=True)\n",
+    "df_all[\"Posting Date\"] = pd.to_datetime(df_all[\"Posting Date\"])\n",
+    "df_all[\"Year\"] = df_all[\"Posting Date\"].dt.year\n",
+    "df_all[\"Month\"] = df_all[\"Posting Date\"].dt.month\n",
+    "df_all[\"Cost\"] = df_all[\"In profit center local currency\"].fillna(0)\n",
+    "return df_all\n",
+    "\n",
+    "def compute_budget_forecast(df):\n",
+    "ts = (\n",
+    "df\n",
+    ".groupby(df[\"Posting Date\"].dt.to_period(\"M\"))[\"Cost\"]\n",
+    ".sum()\n",
+    ".sort_index()\n",
+    ".to_timestamp()\n",
+    ")\n",
+    "if len(ts) < 2:\n",
+    "return pd.DataFrame(columns=[\"Period\", \"Budget\", \"Year\", \"Month\"]), pd.DataFrame(columns=[\"Period\", \"Forecast\", \"Year\", \"Month\"])\n",
+    "\n",
+    "makefile\n",
+    "Copier\n",
+    "Modifier\n",
+    "growth12 = ts.pct_change(12).dropna().mean() if len(ts) >= 13 else 0.05\n",
+    "last = ts.iloc[-1]\n",
+    "next_period = ts.index[-1] + pd.offsets.MonthBegin()\n",
+    "budget_next = last * (1 + growth12)\n",
+    "budget = pd.Series(budget_next, index=[next_period])\n",
+    "\n",
+    "try:\n",
+    "    model = ExponentialSmoothing(ts, trend=\"add\", seasonal=None, initialization_method=\"estimated\")\n",
+    "    fit = model.fit()\n",
+    "    forecast = fit.forecast(1)\n",
+    "except Exception:\n",
+    "    forecast = pd.Series([last], index=[next_period])\n",
+    "\n",
+    "dfB = pd.DataFrame({\n",
+    "    \"Period\": pd.to_datetime(list(ts.index) + list(budget.index)),\n",
+    "    \"Budget\": list(ts.values) + [budget_next]\n",
+    "})\n",
+    "dfF = pd.DataFrame({\n",
+    "    \"Period\": pd.to_datetime(list(ts.index) + list(forecast.index)),\n",
+    "    \"Forecast\": list(ts.values) + list(forecast.values)\n",
+    "})\n",
+    "for dfx in (dfB, dfF):\n",
+    "    dfx[\"Year\"] = dfx[\"Period\"].dt.year\n",
+    "    dfx[\"Month\"] = dfx[\"Period\"].dt.month\n",
+    "return dfB, dfF"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12.4"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
