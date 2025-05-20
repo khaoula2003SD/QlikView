@@ -14,3 +14,4 @@ statsmodels>=0.14
 
 # Optionnel, si tu ajoutes d’autres calculs ou mises en forme
 scipy>=1.10
+statsmodels
