@@ -1,5 +1,3 @@
-# app.py
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -51,7 +49,9 @@ with tabs[0]:
         .reset_index()
         .rename(columns={"Posting Date": "Period", "Cost": "Actual"})
     )
-    real["Period"] = pd.to_datetime(real["Period"])
+    real["Period"] = pd.to_datetime(real["Period"], errors="coerce")
+    dfB["Period"] = pd.to_datetime(dfB["Period"], errors="coerce")
+    dfF["Period"] = pd.to_datetime(dfF["Period"], errors="coerce")
     comp = pd.merge(real, dfB, on="Period", how="left")
     comp = pd.merge(comp, dfF, on="Period", how="left")
     try:
