@@ -3,7 +3,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from utils import load_real_data, compute_budget_forecast
+from util import load_real_data, compute_budget_forecast
 
 # --- Page Config ---
 st.set_page_config(page_title="Maintenance Cost Dashboard", layout="wide")
