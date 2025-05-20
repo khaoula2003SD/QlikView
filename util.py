@@ -8,10 +8,10 @@ def load_real_data(files):
         df = pd.read_excel(f, sheet_name="Sheet1", engine="openpyxl")
         dfs.append(df)
     df_all = pd.concat(dfs, ignore_index=True)
-    df_all["Posting Date"] = pd.to_datetime(df_all["Posting Date"])
-    df_all["Year"]  = df_all["Posting Date"].dt.year
+    df_all["Posting Date"] = pd.to_datetime(df_all["Posting Date"], errors="coerce")
+    df_all["Year"] = df_all["Posting Date"].dt.year
     df_all["Month"] = df_all["Posting Date"].dt.month
-    df_all["Cost"]  = df_all["In profit center local currency"].fillna(0)
+    df_all["Cost"] = df_all["In profit center local currency"].fillna(0)
     return df_all
 
 # --- Calcul automatique Budget & Forecast ---
@@ -34,20 +34,20 @@ def compute_budget_forecast(df):
 
     try:
         model = ExponentialSmoothing(ts, trend="add", seasonal=None, initialization_method="estimated")
-        fit   = model.fit()
+        fit = model.fit()
         forecast = fit.forecast(1)
     except Exception:
         forecast = pd.Series([last], index=[next_period])
 
     dfB = pd.DataFrame({
-        "Period": pd.to_datetime(list(ts.index) + list(budget.index)),
+        "Period": pd.to_datetime(list(ts.index.to_timestamp()) + list(budget.index.to_timestamp())),
         "Budget": list(ts.values) + [budget_next]
     })
     dfF = pd.DataFrame({
-        "Period": pd.to_datetime(list(ts.index) + list(forecast.index)),
+        "Period": pd.to_datetime(list(ts.index.to_timestamp()) + list(forecast.index.to_timestamp())),
         "Forecast": list(ts.values) + list(forecast.values)
     })
     for dfx in (dfB, dfF):
-        dfx["Year"]  = dfx["Period"].dt.year
+        dfx["Year"] = dfx["Period"].dt.year
         dfx["Month"] = dfx["Period"].dt.month
     return dfB, dfF
